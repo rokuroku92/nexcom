@@ -1015,6 +1015,13 @@ class App:
                 val = ("00000000000000000000", "1", "A", "1")
                 mycursor.execute(sql, val)
                 mydb.commit()
+            elif str(datetime.now().strftime('%H%M%S')) == "063000" or str(datetime.now().strftime('%H%M%S')) == "063001":
+                # 新增 log
+                sql = "INSERT INTO log (timestamp_id, station_id, ack_handshaking, cmd_id) VALUES (%s, %s, %s, %s)"
+                val = ("00000000000000000001", "1", "A", "1")
+                mycursor.execute(sql, val)
+                mydb.commit()
+                os.system("sudo reboot")
             mydb.close()
             mycursor.close()
             threading.Event().wait(1)
