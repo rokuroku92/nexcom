@@ -1188,7 +1188,7 @@ if __name__ == '__main__':
     while os.path.exists(file_name):
         # 新增流水號
         file_name = os.path.join(log_folder,
-                                 f"{original_file_name.split('.')[0]}_{index}.{original_file_name.split('.')[1]}")
+                                 f"{current_date.strftime('%Y-%m-%d')}{original_file_name.split('.')[0]}_{index}.{original_file_name.split('.')[1]}")
         index += 1
 
     # 開啟日誌檔案
