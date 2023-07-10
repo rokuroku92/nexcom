@@ -4,11 +4,12 @@ from tkinter import PhotoImage, font, messagebox
 import serial
 import threading
 import os
+import sys
 import yid_control_t
 from yid_util import get_ip_address, getCPUuse
 from yid_control_t import mod_switch, warehouse_status, click_station_service
 import publish_UI as mqt_pub
-from datetime import datetime
+import datetime
 import mysql.connector
 import json
 import paho.mqtt.client as mqtt
@@ -449,7 +450,7 @@ class App:
                         self.data = self.data.strip("\r").strip("\n")  # 將資料刪去\r\n
                         # print('接收到的資料：', self.data)
                         # print(self.data)
-                        timestamp = (datetime.now().strftime('%Y%m%d%H%M%S%f'))  # 製造時間戳記
+                        timestamp = (datetime.datetime.now().strftime('%Y%m%d%H%M%S%f'))  # 製造時間戳記
 
                         # 判斷訊息更改圖片
                         if int(self.data) == 111:
@@ -1066,15 +1067,15 @@ class App:
                 except Exception as e:
                     print("check db error:", e)
                     # trace.back()
-            if str(datetime.now().strftime('%M%S')) == "0000" or str(datetime.now().strftime('%M%S')) == "0001":
+            if str(datetime.datetime.now().strftime('%M%S')) == "0000" or str(datetime.datetime.now().strftime('%M%S')) == "0001":
                 print("o clock")
                 # 新增 log
                 sql = "INSERT INTO log (timestamp_id, station_id, ack_handshaking, cmd_id) VALUES (%s, %s, %s, %s)"
                 val = ("00000000000000000000", "1", "A", "1")
                 mycursor.execute(sql, val)
                 mydb.commit()
-            elif str(datetime.now().strftime('%H%M%S')) == "063000" or str(
-                    datetime.now().strftime('%H%M%S')) == "063001":
+            elif str(datetime.datetime.now().strftime('%H%M%S')) == "063000" or str(
+                    datetime.datetime.now().strftime('%H%M%S')) == "063001":
                 # 新增 log
                 sql = "INSERT INTO log (timestamp_id, station_id, ack_handshaking, cmd_id) VALUES (%s, %s, %s, %s)"
                 val = ("00000000000000000001", "1", "A", "1")
@@ -1153,7 +1154,7 @@ class App:
         while True:
             cpu = CPUTemperature()
             root.title(
-                'YID ' + get_ip_address() + ", " + datetime.now().strftime('%Y%m%d%H%M%S') + ", " + str(cpu).split("=")[
+                'YID ' + get_ip_address() + ", " + datetime.datetime.now().strftime('%Y%m%d%H%M%S') + ", " + str(cpu).split("=")[
                     1].replace(">", "") + "C, " + str(threading.active_count()) + ", " + getCPUuse() + "%")
             threading.Event().wait(1)
 
@@ -1171,7 +1172,36 @@ class App:
 
 if __name__ == '__main__':
     time.sleep(1)
+    # 取得當前日期
+    current_date = datetime.date.today()
+    # 原始檔案名稱，例如 "程式日誌.txt"
+    original_file_name = "-log.txt"
+    # 指定日誌檔案的路徑
+    log_folder = "Log"
+    # 確認日誌資料夾存在，如果不存在則建立資料夾
+    if not os.path.exists(log_folder):
+        os.makedirs(log_folder)
+
+    # 檢查是否已存在相同名稱的檔案
+    file_name = os.path.join(log_folder, f"{current_date.strftime('%Y-%m-%d')}{original_file_name}")
+    index = 1
+    while os.path.exists(file_name):
+        # 新增流水號
+        file_name = os.path.join(log_folder,
+                                 f"{original_file_name.split('.')[0]}_{index}.{original_file_name.split('.')[1]}")
+        index += 1
+
+    # 開啟日誌檔案
+    log_file = open(file_name, 'w')
+
+    # 重定向輸出和錯誤訊息到日誌檔案
+    sys.stdout = log_file
+    sys.stderr = log_file
+
+    # 主程式
     root = tk.Tk()
     app = App(root)
     root.mainloop()
+    # 關閉日誌檔案
+    log_file.close()
 
